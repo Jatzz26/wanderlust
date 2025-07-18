@@ -85,6 +85,12 @@ main().catch((err) => {
     console.error('Database connection error:', err);
 });
 
+app.use((req, res, next) => {
+  res.locals.curruser = req.user || null;
+  next();
+});
+
+
 // Routes
 app.use('/', userRoute);
 app.use('/listings', listroute);
