@@ -1,4 +1,4 @@
-# WANDERLUST -> https://wanderlust-8ueg.onrender.com
+# WANDERLUST -> https://wanderlust-8ueg.onrender.com/listings
 
 # Wanderlust Technologies 
 
