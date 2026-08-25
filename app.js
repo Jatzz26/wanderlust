@@ -72,7 +72,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
-    res.locals.curruser = req.user;
+    res.locals.curruser = req.user || null;
     next();
 });
 
@@ -85,12 +85,10 @@ main().catch((err) => {
     console.error('Database connection error:', err);
 });
 
-app.use((req, res, next) => {
-  res.locals.curruser = req.user || null;
-  next();
+// Health Check Endpoint (for Kubernetes & container probes)
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
-
-
 // Routes
 app.use('/', userRoute);
 app.use('/listings', listroute);
@@ -110,6 +108,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(8080, () => {
-    console.log('App is Listening at port 8080');
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`App is Listening at port ${PORT}`);
 });

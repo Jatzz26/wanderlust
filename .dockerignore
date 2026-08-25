@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitattributes
+.gitignore
+.dockerignore
+Dockerfile*
+docker-compose*
+k8s
+.github
+Readme.md
+*.md

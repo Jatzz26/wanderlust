@@ -1,0 +1,68 @@
+name: Wanderlust CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  lint-and-test:
+    name: Lint & Syntax Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run code check and tests
+        run: npm test
+
+  docker-build:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (dry-run)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: wanderlust:ci-test
+
+  k8s-validate:
+    name: Kubernetes Manifests Validation
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Kubernetes Manifests YAML Syntax
+        run: |
+          python3 -c "
+          import yaml, glob
+          files = glob.glob('k8s/*.yaml') + glob.glob('k8s/*.yml')
+          for f in files:
+              with open(f, 'r') as stream:
+                  yaml.safe_load_all(stream)
+                  print(f'✓ Valid YAML: {f}')
+          "

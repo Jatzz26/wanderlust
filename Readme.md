@@ -2,47 +2,128 @@
 
 # Wanderlust Technologies 
 
-Wanderlust Technologies is a full-stack website built using Node.js, Express.js, HTML, CSS, Bootstrap , and MongoDB. It offers a comprehensive suite of features including user authentication (signup/login) and CRUD operations. The website is designed to be fully responsive, ensuring a seamless experience across various devices.
+Wanderlust Technologies is a full-stack web application built using **Node.js**, **Express.js**, **EJS**, **Bootstrap**, and **MongoDB**. It offers a comprehensive suite of features including user authentication (signup/login) and CRUD operations for travel listings and reviews.
 
-## Introduction
-
-Wanderlust Technologies is a web application aimed at providing users with a platform to explore and share their travel experiences. Whether it's discovering new destinations, planning trips, or documenting adventures, our website offers a user-friendly interface and robust functionality to meet the needs of travel enthusiasts.
+---
 
 ## Features
 
-- **User Authentication**: Enable users to sign up and log in securely to access personalized features.
-- **CRUD Operations**: Implement Create, Read, Update, and Delete operations for managing user data and travel experiences.
-- **Responsive Design**: Ensure a seamless browsing experience across desktop, tablet, and mobile devices.
-- **Interactive Interface**: Utilize HTML and CSS to create an engaging and visually appealing user interface.
+- **User Authentication**: Secure user sign up, login, and session management using Passport.js.
+- **CRUD Operations**: Full Create, Read, Update, and Delete capabilities for travel listings and user reviews.
+- **Cloudinary Integration**: Cloud-based image upload and management.
+- **Responsive Design**: Mobile-first UI using Bootstrap and standard CSS.
+- **Dockerized Architecture**: Standardized containerization for application and database.
+- **Kubernetes Ready**: Complete cluster orchestration manifests (Deployments, Services, ConfigMaps, Secrets, Ingress).
+- **Automated CI/CD**: GitHub Actions pipeline for testing, Docker builds, and manifest validation.
 
-## Installation
+---
 
-To run the Wanderlust Technologies website locally, follow these steps:
+## Quick Start (Local Development)
+
+### 1. Traditional Local Setup
 
 1. Clone the repository:
-
    ```bash
-   git clone https://github.com/your-username/wanderlust-technologies.git
+   git clone https://github.com/Jatzz26/wanderlust.git
+   cd wanderlust
+   ```
 
-2. Install dependencies:
+2. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
 
-    npm install
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-3. Set up MongoDB:
+4. Start MongoDB locally, then run the app:
+   ```bash
+   npm start
+   ```
 
-   Install MongoDB if not already installed.
-   Start MongoDB service.
+5. Access the application at `http://localhost:8080/listings`.
 
-4. Run the application:
+---
 
-   node app.js
+## Docker & Docker Compose Setup
 
-5. Access the website in your browser at [http://localhost:8080/listings].
+### 1. Run with Docker Compose (App + MongoDB)
 
-## Usages
+Start the application and MongoDB in isolated containers with one command:
 
-Upon accessing the website, users can:
+```bash
+docker-compose up --build
+```
 
-. Sign up for a new account or log in with existing credentials.
-. Explore various features such as creating, updating, or deleting travel experiences.
-. Enjoy a seamless browsing experience across different devices.
+- **Wanderlust Web App**: `http://localhost:8080`
+- **Health Check Endpoint**: `http://localhost:8080/health`
+- **MongoDB**: `localhost:27017`
+
+To stop the containers:
+```bash
+docker-compose down
+```
+
+### 2. Standalone Docker Image Build
+
+Build and run only the application container:
+
+```bash
+docker build -t wanderlust:latest .
+docker run -p 8080:8080 --env-file .env wanderlust:latest
+```
+
+---
+
+## Kubernetes Deployment (k8s)
+
+All Kubernetes deployment manifests are located in the [`k8s/`](file:///d:/WEBD/PROJECTS/Wanderlust/k8s) directory.
+
+### Deployment Steps:
+
+1. **Create Namespace**:
+   ```bash
+   kubectl apply -f k8s/namespace.yaml
+   ```
+
+2. **Configure ConfigMap & Secrets**:
+   Copy secret template and fill in your actual credentials:
+   ```bash
+   cp k8s/secret.yaml.example k8s/secret.yaml
+   ```
+   Apply configuration:
+   ```bash
+   kubectl apply -f k8s/configmap.yaml
+   kubectl apply -f k8s/secret.yaml
+   ```
+
+3. **Deploy Database (MongoDB)**:
+   ```bash
+   kubectl apply -f k8s/mongodb-pvc.yaml
+   kubectl apply -f k8s/mongodb-deployment.yaml
+   ```
+
+4. **Deploy Wanderlust Application**:
+   ```bash
+   kubectl apply -f k8s/app-deployment.yaml
+   kubectl apply -f k8s/app-service.yaml
+   kubectl apply -f k8s/ingress.yaml
+   ```
+
+5. **Verify Deployment**:
+   ```bash
+   kubectl get pods,svc -n wanderlust
+   ```
+
+---
+
+## Continuous Integration (CI)
+
+The GitHub Actions workflow is defined in [`.github/workflows/ci.yml`](file:///d:/WEBD/PROJECTS/Wanderlust/.github/workflows/ci.yml).
+
+On every push or pull request to `main`/`master`, the pipeline automatically executes:
+- **Lint & Syntax Check**: Runs `npm test` (`node --check app.js`).
+- **Docker Build Check**: Builds the Docker container to catch build failures.
+- **Kubernetes Validation**: Validates all YAML manifests in `k8s/`.

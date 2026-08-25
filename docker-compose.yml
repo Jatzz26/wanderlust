@@ -1,0 +1,39 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wanderlust-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - ATLASDB_URL=mongodb://mongo:27017/wanderlust
+      - SECRET=mysupersecretkey123
+      - CLOUD_NAME=${CLOUD_NAME:-your_cloud_name}
+      - CLOUD_API_KEY=${CLOUD_API_KEY:-your_api_key}
+      - CLOUD_API_SECRET=${CLOUD_API_SECRET:-your_api_secret}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:6.0
+    container_name: wanderlust-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ping: 1})' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongo_data:
+    driver: local
